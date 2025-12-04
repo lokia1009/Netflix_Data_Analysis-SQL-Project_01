@@ -103,27 +103,19 @@ GROUP BY 1;
 -- 10. Find each year and the average numbers of content release by India on netflix. 
 -- return top 5 year with highest avg content release !
 
-SELECT 
-	country,
-	release_year,
-	COUNT(show_id) as total_release,
-	ROUND(
-		COUNT(show_id)::numeric/
-								(SELECT COUNT(show_id) FROM netflix WHERE country = 'India')::numeric * 100 
-		,2
-		)
-		as avg_release
-FROM netflix
-WHERE country = 'India' 
-GROUP BY country, 2
-ORDER BY avg_release DESC 
+SELECT
+  country,
+  release_year,
+  total_release,
+  ROUND(total_release / SUM(total_release) OVER() * 100, 2) AS avg_release
+FROM (
+  SELECT country, release_year, COUNT(*) AS total_release
+  FROM netflix
+  WHERE country = 'India'
+  GROUP BY country, release_year
+) AS grouped
+ORDER BY avg_release DESC
 LIMIT 5;
-
--- 11. List all movies that are documentaries
-SELECT * FROM netflix
-WHERE listed_in LIKE '%Documentaries';
-
-
 
 -- 12. Find all content without a director
 SELECT * FROM netflix
