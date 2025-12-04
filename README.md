@@ -171,17 +171,17 @@ GROUP BY 1;
 return top 5 year with highest avg content release!
 
 ```sql
-SELECT 
-    country,
-    release_year,
-    COUNT(show_id) AS total_release,
-    ROUND(
-        COUNT(show_id)::numeric /
-        (SELECT COUNT(show_id) FROM netflix WHERE country = 'India')::numeric * 100, 2
-    ) AS avg_release
-FROM netflix
-WHERE country = 'India'
-GROUP BY country, release_year
+SELECT
+  country,
+  release_year,
+  total_release,
+  ROUND(total_release / SUM(total_release) OVER() * 100, 2) AS avg_release
+FROM (
+  SELECT country, release_year, COUNT(*) AS total_release
+  FROM netflix
+  WHERE country = 'India'
+  GROUP BY country, release_year
+) AS grouped
 ORDER BY avg_release DESC
 LIMIT 5;
 ```
